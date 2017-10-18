@@ -2,20 +2,11 @@ $(document).ready(function () {
 
     var questionTime = 10;
     var timerId;
-    var gameQuestions = [];
-
-    var questionObjTEMP = {
-        question: undefined,
-        answers: []
-    };
-
-    var answerObjTEMP = {
-        answer: undefined,
-        correct: false
-    };
+    var gameQuestions;
 
     function pageStartUp() {
         displayEmptyTimer();
+        loadData();
         $("#answers").hide();
     }
 
@@ -24,51 +15,56 @@ $(document).ready(function () {
     $("#startButton").on("click", function () {
         $("#startButton").remove();
         displayQuestion("This is a test");
+
+        displayAnswers("Answers test");
+
+        console.log(gameQuestions);
+        displayNextQuestion();
+
         timerId = setInterval(runTimer, 1000);
         displayTimer(questionTime);
-        displayAnswers("Answers test");
-        gameQuestions = loadData();
-        console.log(gameQuestions);
     });
 
     function loadData() {
-        var questions = [];
         $.ajax({
             url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
             method: "GET"
         }).done(function (response) {
             console.log(response.response_code);
             // console.log(response.results[0].question);
+            if (response.response_code == 0) {
+                gameQuestions = new Array(response.results.length);
+                gameQuestions.answers = new Array(4);
+            } else {
+                // not sure what to do if we don't get any data
+            }
 
             for (var i = 0; i < response.results.length; i++) {
-                var obj = response.results[i];
+                var result = response.results[i];
                 var questionObj = {
-                    question: undefined,
+                    question: result.question,
+                    answered: -1,
                     answers: []
                 };
 
-                questionObj.question = obj.question;
-
-                for (var j = 0; j < obj.incorrect_answers.length; j++) {
+                for (var j = 0; j < result.incorrect_answers.length; j++) {
                     var answerObj = {
-                        answer: undefined,
+                        answer: result.incorrect_answers[j],
                         correct: false
                     };
-                    answerObj.answer = obj.incorrect_answers[j];
-                    questionObj.answers.push(answerObj);
+
+                    questionObj.answers[j] = answerObj;
                 }
                 var answerObj2 = {
-                    answer: undefined,
+                    answer: result.correct_answer,
                     correct: true
                 };
-                answerObj2.answer = obj.correct_answer;
-                questionObj.answers.push(answerObj2);
 
-                questions.push(questionObj);
+                questionObj.answers[result.incorrect_answers.length] = answerObj2;
+
+                gameQuestions[i] = questionObj;
             }
         });
-
-        return questions;
     }
 
     $("#question").on("click", function () {
@@ -76,6 +72,17 @@ $(document).ready(function () {
         displayAnswers("test");
     });
 
+    function displayNextQuestion() {
+        for (var i = 0; i < gameQuestions.length; i++) {
+            var quest = gameQuestions[i];
+            if (quest.answered === -1) {
+                clearQuestion();
+                displayQuestion(quest.question);
+                break;
+            }
+
+        }
+    }
 
     function displayQuestion(question) {
         var $question1 = $("<div>", {class: "question1"});
