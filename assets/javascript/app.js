@@ -2,7 +2,20 @@ $(document).ready(function () {
 
     var questionTime = 10;
     var timerId;
+    var gameQuestions;
 
+    var questionObj = {
+        question: undefined,
+        answers:
+            [
+                {
+                    answer: undefined,
+                    correct: false
+                }
+            ]
+    }; 
+    
+    
     function pageStartUp() {
         displayEmptyTimer();
         $("#answers").hide();
@@ -16,7 +29,28 @@ $(document).ready(function () {
         timerId = setInterval(runTimer, 1000);
         displayTimer(questionTime);
         displayAnswers("Answers test");
+        loadData();
     });
+
+    function loadData() {
+        $.ajax({
+            url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
+            method: "GET"
+        }).done(function (response) {
+            console.log(response.response_code);
+            console.log(response.results[0].question);
+            for (var i = 0; i < response.reults.length; i++) {
+                var obj = response.reults[i];
+                var question = obj.question;
+
+                for (var j = 0; j < obj.incorrect_answers.length; j++) {
+                    var obj1 = obj.incorrect_answers[j];
+                    
+                }
+                
+            }
+        });
+    }
 
     $("#question").on("click", function () {
         clearAnswers();
@@ -25,9 +59,11 @@ $(document).ready(function () {
 
 
     function displayQuestion(question) {
-        var $question = $("#question");
-        $question.remove();
-        $question.html("<div><h2>" + question + "</h2></div>");
+        var $question1 = $("<div>", {class: "question1"});
+        $question1.html("<h2>" + question + "</h2>");
+
+        var question = $("#question");
+        question.append($question1);
     }
 
     function clearAnswers() {
@@ -40,6 +76,11 @@ $(document).ready(function () {
         $div2.remove();
         $div3.remove();
         $div4.remove();
+    }
+
+    function clearQuestion() {
+        var $div = $(".question1");
+        $div.remove();
     }
 
     function displayAnswers(answers) {
