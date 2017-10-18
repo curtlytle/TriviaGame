@@ -33,8 +33,8 @@ $(document).ready(function () {
             console.log(response.response_code);
             // console.log(response.results[0].question);
             if (response.response_code == 0) {
-                gameQuestions = new Array(response.results.length);
-                gameQuestions.answers = new Array(4);
+                gameQuestions = new Array();
+                gameQuestions.answers = new Array();
             } else {
                 // not sure what to do if we don't get any data
             }
@@ -53,16 +53,16 @@ $(document).ready(function () {
                         correct: false
                     };
 
-                    questionObj.answers[j] = answerObj;
+                    questionObj.answers.push(answerObj);
                 }
                 var answerObj2 = {
                     answer: result.correct_answer,
                     correct: true
                 };
 
-                questionObj.answers[result.incorrect_answers.length] = answerObj2;
+                questionObj.answers.push(answerObj2);
 
-                gameQuestions[i] = questionObj;
+                gameQuestions.push(questionObj);
             }
         });
     }
