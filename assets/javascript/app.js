@@ -2,20 +2,18 @@ $(document).ready(function () {
 
     var questionTime = 10;
     var timerId;
-    var gameQuestions;
+    var gameQuestions = [];
 
-    var questionObj = {
+    var questionObjTEMP = {
         question: undefined,
-        answers:
-            [
-                {
-                    answer: undefined,
-                    correct: false
-                }
-            ]
-    }; 
-    
-    
+        answers: []
+    };
+
+    var answerObjTEMP = {
+        answer: undefined,
+        correct: false
+    };
+
     function pageStartUp() {
         displayEmptyTimer();
         $("#answers").hide();
@@ -29,27 +27,48 @@ $(document).ready(function () {
         timerId = setInterval(runTimer, 1000);
         displayTimer(questionTime);
         displayAnswers("Answers test");
-        loadData();
+        gameQuestions = loadData();
+        console.log(gameQuestions);
     });
 
     function loadData() {
+        var questions = [];
         $.ajax({
             url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
             method: "GET"
         }).done(function (response) {
             console.log(response.response_code);
-            console.log(response.results[0].question);
-            for (var i = 0; i < response.reults.length; i++) {
-                var obj = response.reults[i];
-                var question = obj.question;
+            // console.log(response.results[0].question);
+
+            for (var i = 0; i < response.results.length; i++) {
+                var obj = response.results[i];
+                var questionObj = {
+                    question: undefined,
+                    answers: []
+                };
+
+                questionObj.question = obj.question;
 
                 for (var j = 0; j < obj.incorrect_answers.length; j++) {
-                    var obj1 = obj.incorrect_answers[j];
-                    
+                    var answerObj = {
+                        answer: undefined,
+                        correct: false
+                    };
+                    answerObj.answer = obj.incorrect_answers[j];
+                    questionObj.answers.push(answerObj);
                 }
-                
+                var answerObj2 = {
+                    answer: undefined,
+                    correct: true
+                };
+                answerObj2.answer = obj.correct_answer;
+                questionObj.answers.push(answerObj2);
+
+                questions.push(questionObj);
             }
         });
+
+        return questions;
     }
 
     $("#question").on("click", function () {
