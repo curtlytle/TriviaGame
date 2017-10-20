@@ -1,5 +1,5 @@
 $(document).ready(function () {
-
+    // Question Timer object
     var qTimer = {
         id: null,
         amount: 10,
@@ -27,6 +27,7 @@ $(document).ready(function () {
         }
     };
 
+    // Answer Timer object, used for after a question is answered
     var ansTimer = {
         id: null,
         amount: 3,
@@ -52,9 +53,9 @@ $(document).ready(function () {
         }
     };
 
-    var gameQuestions;
+    var gameQuestions;  // all the game questions are stored here after api load up
 
-    function pageStartUp() {
+    function pageStartUp() {  // Initial page startup
         displayEmptyTimer();
         loadData();
         $("#answers").empty();
@@ -62,16 +63,14 @@ $(document).ready(function () {
 
     pageStartUp();
 
+    // Start button click
     $("#startButton").on("click", function () {
         $("#question").empty();
 
         displayNextQuestion();
-
-       // qTimer.id = setInterval(timerCounting, 1000);
-       // displayTimer(qTimer.time);
-        qTimer.start();
     });
 
+    // Load the data from the api
     function loadData() {
         $.ajax({
             url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
@@ -102,20 +101,21 @@ $(document).ready(function () {
 
                     questionObj.answers.push(answerObj);
                 }
-                var answerObj2 = {
+                var answerObj2 = {  // put in the correct answer last, no problem, we shuffle later
                     answer: result.correct_answer,
                     correct: true
                 };
 
                 questionObj.answers.push(answerObj2);
-                questionObj.answers = shuffle(questionObj.answers);
+                questionObj.answers = shuffle(questionObj.answers);  // shuffle all the answers
                 gameQuestions.push(questionObj);
             }
         });
     }
 
+    // gets the next question based on answerCode, which is -1, and then starts the timer
     function displayNextQuestion() {
-        var qobj = getCurrentQuestion();
+        var qobj = getCurrentQuestion();  // have to get the current question
         displayQuestion(qobj.question);
         displayAnswers(qobj.answers);
         qTimer.start();
@@ -171,27 +171,28 @@ $(document).ready(function () {
     }
 
 
+    // clicked on one of the answers
     function answerQuestion() {
         qTimer.stop();
         displayEmptyTimer();
-        var element = $(this).attr("data-element");
-        console.log("Chose question: " + element);
+        var element = $(this).attr("data-element");  // data elements match elements in array
+        // console.log("Chose question: " + element);
 
         var qobj = getCurrentQuestion();
 
         var answer = qobj.answers[element];
         if (answer.correct) {
-            console.log("You chose wisely");
+            //console.log("You chose wisely");
             qobj.answerCode = 2;
             ansTimer.answerDisplay = "Correct!";
         } else {
-            console.log("You chose poorly");
+            //console.log("You chose poorly");
             qobj.answerCode = 1;
             var correctAnswer = getCorrectAnswer(qobj.answers);
             ansTimer.answerDisplay = "Nope! The correct answer is: " + correctAnswer.answer;
         }
 
-        ansTimer.start();
+        ansTimer.start();  // starting the answer timer to give time to show results
     }
 
     function getCorrectAnswer(answers) {
@@ -224,6 +225,5 @@ $(document).ready(function () {
 
         return array;
     }
-
 
 });
