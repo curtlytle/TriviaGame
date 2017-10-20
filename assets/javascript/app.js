@@ -1,4 +1,6 @@
 $(document).ready(function () {
+    var gameQuestions;  // all the game questions are stored here after api load up
+
     // Question Timer object
     var qTimer = {
         id: null,
@@ -30,8 +32,8 @@ $(document).ready(function () {
     // Answer Timer object, used for after a question is answered
     var ansTimer = {
         id: null,
-        amount: 3,
-        time: 3,
+        amount: 1,
+        time: 1,
         answerDisplay: "",
         start: function () {
             clearInterval(ansTimer.id);
@@ -53,8 +55,6 @@ $(document).ready(function () {
         }
     };
 
-    var gameQuestions;  // all the game questions are stored here after api load up
-
     function pageStartUp() {  // Initial page startup
         displayEmptyTimer();
         loadData();
@@ -68,6 +68,10 @@ $(document).ready(function () {
         $("#question").empty();
 
         displayNextQuestion();
+    });
+
+    $(document).on("click", "#playAgain", function () {
+       displayNextQuestion();
     });
 
     // Load the data from the api
@@ -116,9 +120,13 @@ $(document).ready(function () {
     // gets the next question based on answerCode, which is -1, and then starts the timer
     function displayNextQuestion() {
         var qobj = getCurrentQuestion();  // have to get the current question
-        displayQuestion(qobj.question);
-        displayAnswers(qobj.answers);
-        qTimer.start();
+        if (qobj != null) {
+            displayQuestion(qobj.question);
+            displayAnswers(qobj.answers);
+            qTimer.start();
+        } else {
+            allDone();
+        }
     }
 
     function getCurrentQuestion() {
@@ -128,6 +136,7 @@ $(document).ready(function () {
                 return quest;
             }
         }
+        return null;
     }
 
     function displayQuestion(question) {
@@ -193,6 +202,48 @@ $(document).ready(function () {
         }
 
         ansTimer.start();  // starting the answer timer to give time to show results
+    }
+
+    function allDone() {
+        displayQuestion("All Done, here's how you did!");
+        showResults();
+        loadData();
+    }
+
+    function showResults() {
+        var answersdiv = $("#answers");
+        answersdiv.empty();
+        var cntCorrect = 0;
+        var cntIncorrect = 0;
+        var cntNada = 0;
+
+        for (var i = 0; i < gameQuestions.length; i++) {
+            var question = gameQuestions[i];
+            if (question.answerCode == 0) {
+                cntNada++;
+            } else if (question.answerCode == 1) {
+                cntIncorrect++;
+            } else if (question.answerCode == 2) {
+                cntCorrect++;
+            }
+        }
+
+        var $adiv = $("<div>");
+        $adiv.html("<h4>Correct Answers: " + cntCorrect + "</h4>");
+        answersdiv.append($adiv);
+        var $bdiv = $("<div>");
+        $bdiv.html("<h4>Incorrect Answers: " + cntIncorrect + "</h4>");
+        answersdiv.append($bdiv);
+        var $cdiv = $("<div>");
+        $cdiv.html("<h4>Unanswered: " + cntNada + "</h4>");
+        answersdiv.append($cdiv);
+
+        var $buttPlayAgain = $("<button>");
+        $buttPlayAgain.addClass("btn btn-success btn-lg");
+        $buttPlayAgain.attr("id", "playAgain");
+        $buttPlayAgain.html("Click to Play Again");
+
+        answersdiv.append($buttPlayAgain);
     }
 
     function getCorrectAnswer(answers) {
