@@ -1,7 +1,57 @@
 $(document).ready(function () {
 
-    var questionTime = 10;
-    var timerId;
+    var qTimer = {
+        id: null,
+        amount: 10,
+        time: 10,
+        start: function () {
+            clearInterval(qTimer.id);
+            qTimer.time = qTimer.amount;
+            qTimer.id = setInterval(qTimer.count, 1000);
+        },
+        count: function () {
+            displayTimer(qTimer.time);
+            qTimer.time--;
+
+            if (qTimer.time < 0) {
+                clearInterval(qTimer.id);
+                var qobj1 = getCurrentQuestion();
+                qobj1.answerCode = 0;
+                var correctAnswer = getCorrectAnswer(qobj1.answers);
+                ansTimer.answerDisplay = "Times Up! The correct answer is: " + correctAnswer.answer;
+                ansTimer.start();
+            }
+        },
+        stop: function () {
+            clearInterval(qTimer.id);
+        }
+    };
+
+    var ansTimer = {
+        id: null,
+        amount: 3,
+        time: 3,
+        answerDisplay: "",
+        start: function () {
+            clearInterval(ansTimer.id);
+            ansTimer.time = ansTimer.amount;
+            ansTimer.id = setInterval(ansTimer.count, 1000);
+            showAnswer();
+        },
+        count: function () {
+
+            ansTimer.time--;
+
+            if (ansTimer.time < 0) {
+                clearInterval(ansTimer.id);
+                displayNextQuestion();
+            }
+        },
+        stop: function () {
+            clearInterval(ansTimer.id);
+        }
+    };
+
     var gameQuestions;
 
     function pageStartUp() {
@@ -17,8 +67,9 @@ $(document).ready(function () {
 
         displayNextQuestion();
 
-        timerId = setInterval(runTimer, 1000);
-        displayTimer(questionTime);
+       // qTimer.id = setInterval(timerCounting, 1000);
+       // displayTimer(qTimer.time);
+        qTimer.start();
     });
 
     function loadData() {
@@ -39,7 +90,7 @@ $(document).ready(function () {
                 var result = response.results[i];
                 var questionObj = {
                     question: result.question,
-                    answered: -1,
+                    answerCode: -1,  // -1 = current question, 0 = no answer, 1 = incorrect, 2 = correct
                     answers: []
                 };
 
@@ -63,35 +114,34 @@ $(document).ready(function () {
         });
     }
 
-    $("#question").on("click", function () {
-        //displayAnswers("test");
-    });
-
     function displayNextQuestion() {
+        var qobj = getCurrentQuestion();
+        displayQuestion(qobj.question);
+        displayAnswers(qobj.answers);
+        qTimer.start();
+    }
+
+    function getCurrentQuestion() {
         for (var i = 0; i < gameQuestions.length; i++) {
             var quest = gameQuestions[i];
-            if (quest.answered === -1) {
-                displayQuestion(quest.question);
-                displayAnswers(quest.answers);
-                break;
+            if (quest.answerCode === -1) {
+                return quest;
             }
-
         }
     }
 
     function displayQuestion(question) {
         $("#question").empty();
         var $question1 = $("<div>", {class: "question1"});
-        $question1.html("<h2>" + question + "</h2>");
+        $question1.html("<h3>" + question + "</h3>");
 
         var question = $("#question");
         question.append($question1);
     }
 
     function displayAnswers(answers) {
-        $("#answers").empty();
-
         var answersdiv = $("#answers");
+        answersdiv.empty();
 
         for (var i = 0; i < answers.length; i++) {
             var obj = answers[i];
@@ -99,10 +149,17 @@ $(document).ready(function () {
             var $adiv = $("<div>");
             $adiv.attr("data-element", i);
             $adiv.addClass(aclass);
-            $adiv.html("<p>" + obj.answer + "</p>");
+            $adiv.html("<h4>" + obj.answer + "</h4>");
             answersdiv.append($adiv);
         }
+    }
 
+    function showAnswer() {
+        var answersdiv = $("#answers");
+        answersdiv.empty();
+        var $adiv = $("<div>");
+        $adiv.html("<h3>" + ansTimer.answerDisplay + "</h3>");
+        answersdiv.append($adiv);
     }
 
     function displayTimer(time) {
@@ -113,20 +170,38 @@ $(document).ready(function () {
         $("#timer").html("<h3>&nbsp;</h3>");
     }
 
-    function runTimer() {
-        questionTime--;
-        displayTimer(questionTime);
-
-        if (questionTime <= 0) {
-            clearInterval(timerId);
-        }
-
-    }
 
     function answerQuestion() {
-
+        qTimer.stop();
+        displayEmptyTimer();
         var element = $(this).attr("data-element");
         console.log("Chose question: " + element);
+
+        var qobj = getCurrentQuestion();
+
+        var answer = qobj.answers[element];
+        if (answer.correct) {
+            console.log("You chose wisely");
+            qobj.answerCode = 2;
+            ansTimer.answerDisplay = "Correct!";
+        } else {
+            console.log("You chose poorly");
+            qobj.answerCode = 1;
+            var correctAnswer = getCorrectAnswer(qobj.answers);
+            ansTimer.answerDisplay = "Nope! The correct answer is: " + correctAnswer.answer;
+        }
+
+        ansTimer.start();
+    }
+
+    function getCorrectAnswer(answers) {
+        for (var i = 0; i < answers.length; i++) {
+            var obj = answers[i];
+            if (obj.correct) {
+                return obj;
+            }
+        }
+        return null;
     }
 
     $(document).on("click", ".answer", answerQuestion);
