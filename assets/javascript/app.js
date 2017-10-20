@@ -256,7 +256,7 @@ $(document).ready(function () {
         return null;
     }
 
-    $(document).on("click", ".answer", answerQuestion);
+    $(document).on("click touchstart", ".answer", answerQuestion);
 
     function shuffle(array) {
         var currentIndex = array.length, temporaryValue, randomIndex;
