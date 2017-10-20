@@ -30,7 +30,7 @@ header {
     background-color: #efeee7;
 }
 
-.answer1:hover, .answer2:hover , .answer3:hover, .answer4:hover {
+.answer:hover {
     background-color: #008CBA;
     cursor: pointer;
     cursor: hand;

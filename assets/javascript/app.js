@@ -7,18 +7,14 @@ $(document).ready(function () {
     function pageStartUp() {
         displayEmptyTimer();
         loadData();
-        $("#answers").hide();
+        $("#answers").empty();
     }
 
     pageStartUp();
 
     $("#startButton").on("click", function () {
-        $("#startButton").remove();
-        displayQuestion("This is a test");
+        $("#question").empty();
 
-        displayAnswers("Answers test");
-
-        console.log(gameQuestions);
         displayNextQuestion();
 
         timerId = setInterval(runTimer, 1000);
@@ -30,7 +26,7 @@ $(document).ready(function () {
             url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
             method: "GET"
         }).done(function (response) {
-            console.log(response.response_code);
+            console.log(response);
             // console.log(response.results[0].question);
             if (response.response_code == 0) {
                 gameQuestions = new Array();
@@ -61,23 +57,22 @@ $(document).ready(function () {
                 };
 
                 questionObj.answers.push(answerObj2);
-
+                questionObj.answers = shuffle(questionObj.answers);
                 gameQuestions.push(questionObj);
             }
         });
     }
 
     $("#question").on("click", function () {
-        clearAnswers();
-        displayAnswers("test");
+        //displayAnswers("test");
     });
 
     function displayNextQuestion() {
         for (var i = 0; i < gameQuestions.length; i++) {
             var quest = gameQuestions[i];
             if (quest.answered === -1) {
-                clearQuestion();
                 displayQuestion(quest.question);
+                displayAnswers(quest.answers);
                 break;
             }
 
@@ -85,6 +80,7 @@ $(document).ready(function () {
     }
 
     function displayQuestion(question) {
+        $("#question").empty();
         var $question1 = $("<div>", {class: "question1"});
         $question1.html("<h2>" + question + "</h2>");
 
@@ -92,41 +88,20 @@ $(document).ready(function () {
         question.append($question1);
     }
 
-    function clearAnswers() {
-        var $div1 = $(".answer1");
-        var $div2 = $(".answer2");
-        var $div3 = $(".answer3");
-        var $div4 = $(".answer4");
-
-        $div1.remove();
-        $div2.remove();
-        $div3.remove();
-        $div4.remove();
-    }
-
-    function clearQuestion() {
-        var $div = $(".question1");
-        $div.remove();
-    }
-
     function displayAnswers(answers) {
-        var $div1 = $("<div>", {class: "answer1"});
-        var $div2 = $("<div>", {class: "answer2"});
-        var $div3 = $("<div>", {class: "answer3"});
-        var $div4 = $("<div>", {class: "answer4"});
+        $("#answers").empty();
 
-        $div1.html("<p>answer 1 hello</p>");
-        $div2.html("<p>answer 2 hello</p>");
-        $div3.html("<p>answer 3 hello</p>");
-        $div4.html("<p>answer 4 hello</p>");
+        var answersdiv = $("#answers");
 
-        var answers = $("#answers");
-        answers.show();
-        answers.append($div1);
-        answers.append($div2);
-        answers.append($div3);
-        answers.append($div4);
-
+        for (var i = 0; i < answers.length; i++) {
+            var obj = answers[i];
+            var aclass = "answer";
+            var $adiv = $("<div>");
+            $adiv.attr("data-element", i);
+            $adiv.addClass(aclass);
+            $adiv.html("<p>" + obj.answer + "</p>");
+            answersdiv.append($adiv);
+        }
 
     }
 
@@ -146,6 +121,33 @@ $(document).ready(function () {
             clearInterval(timerId);
         }
 
+    }
+
+    function answerQuestion() {
+
+        var element = $(this).attr("data-element");
+        console.log("Chose question: " + element);
+    }
+
+    $(document).on("click", ".answer", answerQuestion);
+
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
     }
 
 
