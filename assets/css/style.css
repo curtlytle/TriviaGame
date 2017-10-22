@@ -1,19 +1,23 @@
 header {
-    background-color: #cc0000;
+    background-color: #d58512;
     color: white;
     text-align: center;
+}
+
+body {
+    background-image: url("../images/historyMap.jpg");
 }
 
 .row {
     text-align: center;
 }
 
-#timer {
-     background-color: #888888;
- }
+.buttonColor {
+    background-color: #337ab7;
+}
 
-#question {
-    background-color: #9d9d9d;
+.questionStyle {
+    background-color: #d5d5d5;
 }
 
 .overlay {
@@ -26,8 +30,34 @@ header {
     background-color: #008CBA;
 }
 
-#answers {
+.answer {
     background-color: #efeee7;
+}
+
+.timerStyle {
+    background-color: beige;
+}
+
+.answerResultGood {
+    background-color: #3c763d;
+    color: white;
+}
+
+.resultStyle {
+    color: white;
+}
+
+.answerResultBad {
+    background-color: #761c19;
+    color: white;
+}
+
+#answers {
+    /*background-color: #efeee7;*/
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 10px;
+
 }
 
 .answer:hover {

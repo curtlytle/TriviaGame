@@ -1,11 +1,12 @@
 $(document).ready(function () {
     var gameQuestions;  // all the game questions are stored here after api load up
+    var answerFlag = false;
 
     // Question Timer object
     var qTimer = {
         id: null,
-        amount: 10,
-        time: 10,
+        amount: 20,
+        time: 20,
         start: function () {
             clearInterval(qTimer.id);
             qTimer.time = qTimer.amount;
@@ -16,6 +17,7 @@ $(document).ready(function () {
             qTimer.time--;
 
             if (qTimer.time < 0) {
+                answerFlag = false;
                 clearInterval(qTimer.id);
                 var qobj1 = getCurrentQuestion();
                 qobj1.answerCode = 0;
@@ -32,8 +34,8 @@ $(document).ready(function () {
     // Answer Timer object, used for after a question is answered
     var ansTimer = {
         id: null,
-        amount: 1,
-        time: 1,
+        amount: 2,
+        time: 2,
         answerDisplay: "",
         start: function () {
             clearInterval(ansTimer.id);
@@ -66,18 +68,21 @@ $(document).ready(function () {
     // Start button click
     $("#startButton").on("click", function () {
         $("#question").empty();
+        $("#question").addClass("questionStyle");
 
         displayNextQuestion();
     });
 
     $(document).on("click", "#playAgain", function () {
-       displayNextQuestion();
+        displayNextQuestion();
     });
 
+    // https://opentdb.com/api_config.php to get different questions
     // Load the data from the api
     function loadData() {
         $.ajax({
-            url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
+            // url: "https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple",
+            url: "https://opentdb.com/api.php?amount=10&category=23&difficulty=easy&type=multiple",
             method: "GET"
         }).done(function (response) {
             console.log(response);
@@ -166,19 +171,25 @@ $(document).ready(function () {
     function showAnswer() {
         var answersdiv = $("#answers");
         answersdiv.empty();
-        var $adiv = $("<div>");
-        $adiv.html("<h3>" + ansTimer.answerDisplay + "</h3>");
-        answersdiv.append($adiv);
+        var adiv = $("<div>");
+        if (answerFlag === true) {
+            adiv.addClass("answerResultGood");
+        } else {
+            adiv.addClass("answerResultBad");
+        }
+        adiv.html("<h3>" + ansTimer.answerDisplay + "</h3>");
+        answersdiv.append(adiv);
     }
 
     function displayTimer(time) {
         $("#timer").html("<h3>Time Remaining: " + time + " seconds</h3>");
+        $("#timer").addClass("timerStyle");
     }
 
     function displayEmptyTimer() {
         $("#timer").html("<h3>&nbsp;</h3>");
+        $("#timer").removeClass("timerStyle");
     }
-
 
     // clicked on one of the answers
     function answerQuestion() {
@@ -194,11 +205,13 @@ $(document).ready(function () {
             //console.log("You chose wisely");
             qobj.answerCode = 2;
             ansTimer.answerDisplay = "Correct!";
+            answerFlag = true;
         } else {
             //console.log("You chose poorly");
             qobj.answerCode = 1;
             var correctAnswer = getCorrectAnswer(qobj.answers);
             ansTimer.answerDisplay = "Nope! The correct answer is: " + correctAnswer.answer;
+            answerFlag = false;
         }
 
         ansTimer.start();  // starting the answer timer to give time to show results
@@ -228,18 +241,21 @@ $(document).ready(function () {
             }
         }
 
-        var $adiv = $("<div>");
-        $adiv.html("<h4>Correct Answers: " + cntCorrect + "</h4>");
-        answersdiv.append($adiv);
-        var $bdiv = $("<div>");
-        $bdiv.html("<h4>Incorrect Answers: " + cntIncorrect + "</h4>");
-        answersdiv.append($bdiv);
-        var $cdiv = $("<div>");
-        $cdiv.html("<h4>Unanswered: " + cntNada + "</h4>");
-        answersdiv.append($cdiv);
+        var adiv = $("<div>");
+        adiv.html("<h4>Correct Answers: " + cntCorrect + "</h4>");
+        adiv.addClass("resultStyle");
+        answersdiv.append(adiv);
+        var bdiv = $("<div>");
+        bdiv.html("<h4>Incorrect Answers: " + cntIncorrect + "</h4>");
+        bdiv.addClass("resultStyle");
+        answersdiv.append(bdiv);
+        var cdiv = $("<div>");
+        cdiv.html("<h4>Unanswered: " + cntNada + "</h4>");
+        cdiv.addClass("resultStyle");
+        answersdiv.append(cdiv);
 
         var $buttPlayAgain = $("<button>");
-        $buttPlayAgain.addClass("btn btn-success btn-lg");
+        $buttPlayAgain.addClass("btn btn-success btn-lg buttonColor");
         $buttPlayAgain.attr("id", "playAgain");
         $buttPlayAgain.html("Click to Play Again");
 
